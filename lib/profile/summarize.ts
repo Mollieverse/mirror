@@ -65,14 +65,14 @@ export function summarizeForClaude(args: {
   // ── Portfolio value & top tokens ─────────────────────────
   const allBalances = [
     ...evmBalances.map((b) => ({
-      symbol: b.symbol ?? "?",
-      chain: b.chain,
-      valueUsd: b.value_usd ?? 0,
+      symbol: b?.symbol ?? "?",
+      chain: b?.chain ?? "unknown",
+      valueUsd: b?.value_usd ?? 0,
     })),
     ...svmBalances.map((b) => ({
-      symbol: b.symbol ?? "?",
+      symbol: b?.symbol ?? "?",
       chain: "solana",
-      valueUsd: b.value_usd ?? 0,
+      valueUsd: b?.value_usd ?? 0,
     })),
   ];
   const totalValueUsd = allBalances.reduce((s, b) => s + b.valueUsd, 0);
@@ -82,13 +82,18 @@ export function summarizeForClaude(args: {
 
   // ── Chain breadth ────────────────────────────────────────
   const chainSet = new Set<string>();
-  evmBalances.forEach((b) => chainSet.add(b.chain));
+  evmBalances.forEach((b) => {
+    if (b?.chain) chainSet.add(b.chain);
+  });
   svmBalances.forEach(() => chainSet.add("solana"));
-  activity.forEach((a) => chainSet.add(a.chain));
+  activity.forEach((a) => {
+    if (a?.chain) chainSet.add(a.chain);
+  });
   const chainsTouched = chainSet.size;
 
   // ── Activity window ──────────────────────────────────────
-  const sortedByTime = [...activity].sort(
+  const validActivity = activity.filter((a) => a?.block_time);
+  const sortedByTime = [...validActivity].sort(
     (a, b) =>
       new Date(a.block_time).getTime() - new Date(b.block_time).getTime()
   );
@@ -110,16 +115,17 @@ export function summarizeForClaude(args: {
   // ── Tx type breakdown ────────────────────────────────────
   const txTypeBreakdown: Record<string, number> = {};
   activity.forEach((a) => {
-    const t = a.type ?? "unknown";
+    const t = a?.type ?? "unknown";
     txTypeBreakdown[t] = (txTypeBreakdown[t] ?? 0) + 1;
   });
 
   // ── Time-of-day distribution ─────────────────────────────
   const hourlyTxDistribution = new Array(24).fill(0) as number[];
   activity.forEach((a) => {
+    if (!a?.block_time) return;
     try {
       const h = new Date(a.block_time).getUTCHours();
-      hourlyTxDistribution[h]++;
+      if (!isNaN(h)) hourlyTxDistribution[h]++;
     } catch {
       /* ignore */
     }
@@ -127,11 +133,11 @@ export function summarizeForClaude(args: {
 
   // ── Flags ────────────────────────────────────────────────
   const hasNftActivity = activity.some(
-    (a) => a.asset_type === "erc721" || a.asset_type === "erc1155"
+    (a) => a?.asset_type === "erc721" || a?.asset_type === "erc1155"
   );
   const hasSolanaActivity =
     svmBalances.length > 0 ||
-    activity.some((a) => a.chain.toLowerCase().includes("solana"));
+    activity.some((a) => a?.chain?.toLowerCase().includes("solana") ?? false);
   const hasMultipleChains = chainsTouched > 1;
 
   // ── Recent tail (last 20) ────────────────────────────────
@@ -140,10 +146,10 @@ export function summarizeForClaude(args: {
     .reverse()
     .map((a) => ({
       iso: a.block_time,
-      chain: a.chain,
-      type: a.type,
-      symbol: a.symbol,
-      valueUsd: a.value_usd,
+      chain: a?.chain ?? "unknown",
+      type: a?.type ?? "unknown",
+      symbol: a?.symbol,
+      valueUsd: a?.value_usd,
     }));
 
   return {

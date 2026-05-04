@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+/* ============================================
+   MIRROR — DESIGN TOKENS
+   The wallet that watches you back.
+   ============================================ */
+
+@theme {
+  /* === OBSIDIAN — surfaces === */
+  --color-void: #07070A;          /* deepest layer, page bg */
+  --color-onyx: #0E0E13;          /* primary surface */
+  --color-graphite: #15151C;      /* elevated cards */
+  --color-slate: #1F1F28;         /* borders, dividers */
+  --color-ash: #2A2A36;           /* hover states */
+
+  /* === MERCURY — type === */
+  --color-mercury: #E8E8EC;       /* primary text */
+  --color-pewter: #A0A0AB;        /* secondary text */
+  --color-smoke: #6B6B76;         /* tertiary, metadata */
+  --color-whisper: #3F3F4A;       /* disabled, hints */
+
+  /* === QUICKSILVER — signature accent === */
+  --color-quicksilver: #C0C5CE;   /* default accent */
+  --color-quicksilver-dim: #C0C5CE33;
+
+  /* === SEMANTIC — used sparingly === */
+  --color-profit: #7FE1B8;        /* muted mint */
+  --color-loss: #E17F8E;          /* muted rose */
+  --color-warning: #E8C76F;       /* muted gold */
+  --color-live: #7FE1B8;          /* webhook pulse */
+
+  /* === ARCHETYPE COLORS — replace quicksilver per profile === */
+  --color-arch-rose: #E17F8E;       /* The Top Buyer */
+  --color-arch-mint: #7FE1B8;       /* The Diamond Hands */
+  --color-arch-amethyst: #B89AF0;   /* The Rotator */
+  --color-arch-gold: #E8C76F;       /* The Insider */
+  --color-arch-glacier: #8FD4E8;    /* The Farmer */
+  --color-arch-ember: #FF6B6B;      /* The Revenge Trader */
+  --color-arch-smoke: #6B6B76;      /* The Ghost */
+  --color-arch-copper: #FF8F4F;     /* The Sniper */
+  --color-arch-azure: #4F9FFF;      /* The Whale Watcher */
+  --color-arch-bronze: #B8975F;     /* The Bag Holder */
+  --color-arch-pearl: #F0B8D4;      /* The Day-One */
+  --color-arch-acid: #9FFF6B;       /* The Mercenary */
+
+  /* === FONTS === */
+  --font-display: "Instrument Serif", "Times New Roman", serif;
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+
+  /* === MOTION === */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 120ms;
+  --duration-base: 240ms;
+  --duration-slow: 400ms;
+}
+
+/* === BASE === */
+html, body {
+  background: var(--color-void);
+  color: var(--color-mercury);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* === TYPOGRAPHY UTILITIES === */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "zero", "ss01";
+}
+
+.text-micro {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* === THE REFLECTION MOTIF ===
+   Doubled, mirrored type with fade-to-transparent.
+   Use on archetype names. */
+.mirror-text {
+  position: relative;
+  display: inline-block;
+}
+
+.mirror-text::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  transform: scaleY(-1);
+  transform-origin: top;
+  background: linear-gradient(
+    to bottom,
+    currentColor 0%,
+    transparent 60%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.25;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* === THE BREATHING LIVE INDICATOR ===
+   Ripple animation — drop hitting still water. */
+@keyframes ripple {
+  0%   { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.ripple-dot {
+  position: relative;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-live);
+}
+
+.ripple-dot::before,
+.ripple-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--color-live);
+  animation: ripple 2.4s var(--ease-out) infinite;
+}
+
+.ripple-dot::after {
+  animation-delay: 1.2s;
+}
+
+/* === THE REFLECTION LINE ===
+   Hairline at visual center of every screen. */
+.reflection-line {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--color-slate) 20%,
+    var(--color-slate) 80%,
+    transparent 100%
+  );
+}
+
+/* === STAGGERED REVEAL ===
+   For cascading section entries on profile load. */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.reveal {
+  animation: reveal var(--duration-slow) var(--ease-out) both;
+}
+
+/* === WORD CYCLE ===
+   For loading state — replaces spinners. */
+@keyframes word-fade {
+  0%, 100% { opacity: 0; }
+  20%, 80% { opacity: 1; }
+}
+
+/* === SLIDE-IN-FROM-RIGHT (Live Feed entries) === */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+.slide-in {
+  animation: slide-in var(--duration-base) var(--ease-out) both;
+}
+
+/* === CUSTOM SCROLLBAR === */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-slate);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ash);
+}
+
+/* === SELECTION === */
+::selection {
+  background: var(--color-quicksilver);
+  color: var(--color-void);
+}
